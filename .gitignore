@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.sqlite
+node_modules/
+*.pem
+backups/
+.local-*
+_analysis/
+.session/
+tls/
+state/
+evidence/
+._*
+scripts/*/target/

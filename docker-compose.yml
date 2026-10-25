@@ -1,0 +1,29 @@
+name: gravity
+services:
+  gravity-webui:
+    build: .
+    image: gravity-webui:local
+    container_name: gravity-webui
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      TZ: Asia/Tokyo
+      GRAVITY_SERVE_HOST: "0.0.0.0"
+      GRAVITY_SERVE_PORT: "8787"
+      GRAVITY_TLS_PORT: "8788"
+      GRAVITY_TLS_CERT: /tls/cert.pem
+      GRAVITY_TLS_KEY: /tls/key.pem
+      GRAVITY_ACCOUNT_STATE_FILE: /state/account-state.json
+    volumes:
+      - ./tls:/tls:ro
+      - ./.session:/app/.session:ro
+      - ./state:/state
+    ports:
+      - "8787:8787"
+      - "8788:8788"
+    logging:
+      driver: json-file
+      options:
+        max-size: "2m"
+        max-file: "1"

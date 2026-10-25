@@ -1,0 +1,16 @@
+{
+  "name": "gravity-webui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GRAVITY account RTC/RTM membership and official seat lifecycle",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "vendor:rtm": "node scripts/vendor_rtm.cjs"
+  },
+  "dependencies": {
+    "agora-rtm-sdk": "1.5.1"
+  }
+}

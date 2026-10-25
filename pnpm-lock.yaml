@@ -1,0 +1,22 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      agora-rtm-sdk:
+        specifier: 1.5.1
+        version: 1.5.1
+
+packages:
+
+  agora-rtm-sdk@1.5.1:
+    resolution: {integrity: sha512-4zMZVijEOTimIaY4VUS6kJxg7t+nTV3Frtt01Ffs6dvkOrPmpeuCu/1MX88QgAOE04IBiLo0l89ysc+woVn2FA==}
+
+snapshots:
+
+  agora-rtm-sdk@1.5.1: {}

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f5fa">
+  <title>GRAVITY</title>
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="/vendor/rtc@4.23.0.min.js"></script>
+  <script defer src="/vendor/rtm@1.5.1.min.js"></script>
+  <script defer src="/controller.js"></script>
+  <script defer src="/gift-events.js"></script>
+  <script defer src="/translate.js"></script>
+  <script defer src="/member-controller.js"></script>
+  <script defer src="/view-model.js"></script>
+  <script defer src="/app.js"></script>
+  <script defer src="/auto-like.js"></script>
+  <script defer src="/rewards-ui.js"></script>
+  <script defer src="/feed-ui.js"></script>
+  <script defer src="/im-ui.js"></script>
+  <script defer src="/profile-ui.js"></script>
+  <script defer src="/relation-ui.js"></script>
+  <script defer src="/footprints-ui.js"></script>
+</head>
+<body>
+<main>
+  <header class="topbar"><h1>GRAVITY<span class="brand-dot" aria-hidden="true"></span></h1><div class="actions"><button id="btnBrowse" type="button" class="secondary compact" hidden>ルームを探す</button><button id="btnForceLeave" type="button" class="secondary compact" title="退出できないとき、または既存接続と表示されたときに使う：このページを切断し、サーバー上の残留入室を破棄してすぐ再入室できます">強制退出</button><span id="connectionBadge" class="badge">未接続</span></div></header>
+  <nav class="view-tabs" aria-label="メニュー"><button id="btnRoomView" type="button" aria-pressed="true">ルーム</button><button id="btnFeedView" type="button" class="secondary" aria-pressed="false">投稿</button><button id="btnFriendView" type="button" class="secondary" aria-pressed="false">フレンド<span id="friendUnreadBadge" class="tab-badge" hidden></span></button></nav>
+  <details id="rewardPanel" class="reward-panel"><summary id="rewardSummary" aria-live="polite">自動受け取り</summary><ul id="rewardDetail" class="muted small"></ul><ol id="rewardLog" class="muted small"></ol></details>
+  <section id="imNotice" class="im-notice" aria-label="新しいメッセージ" aria-live="polite" hidden><div class="im-notice-head"><strong>💬 メッセージが届きました</strong><button id="btnDismissImNotice" type="button" class="secondary compact" title="いったん隠します。新しいメッセージが来ると再表示されます">隠す</button></div><ul id="imNoticeList"></ul></section>
+  <section id="feedPanel" class="card" aria-labelledby="feedTitle" hidden>
+    <div class="section-head"><h2 id="feedTitle">投稿</h2><button id="btnRefreshFeed" type="button" class="secondary compact">更新</button></div>
+    <div class="filters"><label for="feedMode" class="sr-only">投稿の種類</label><select id="feedMode"><option value="recommended">おすすめ</option><option value="following">フォロー中</option><option value="latest">新着</option></select><label class="gift-thanks-toggle auto-like"><input id="autoLike" type="checkbox" checked> 自動いいね</label></div>
+    <p id="feedStatus" class="muted small" role="status"></p><div id="feedList"></div>
+    <nav class="pagination" aria-label="投稿のページ"><button id="btnPrevFeed" type="button" class="secondary" disabled>前へ</button><span id="feedPage">1 / 1</span><button id="btnNextFeed" type="button" class="secondary" disabled>次へ</button></nav>
+  </section>
+  <section id="friendsPanel" class="card" aria-labelledby="imTitle" hidden>
+    <div class="section-head"><h2 id="imTitle">フレンド</h2><div class="actions"><button id="btnConnectIm" type="button" class="secondary compact" hidden>メッセージを再接続</button><button id="btnRefreshFriendsIm" type="button" class="secondary compact">更新</button></div></div>
+    <div class="filters"><button id="btnUnreadIm" type="button" class="secondary compact" hidden>未読</button></div>
+    <p id="imStatus" class="muted small" role="status">読み込み中…</p><p id="imBlocked" class="muted small"></p>
+    <details class="relation-sync"><summary id="relationSummary">自動同期</summary><ul id="relationLog" class="relation-log muted small"></ul></details>
+    <ul id="imFriends" class="room-list im-friend-list"></ul><button id="btnMoreFriendsIm" type="button" class="secondary compact" hidden>さらに表示</button>
+    <div class="section-head"><h2>足跡</h2><div class="actions"><button id="btnFootprints" type="button" class="secondary compact">足跡を見る</button></div></div>
+    <div class="filters"><label for="footTab" class="sr-only">足跡の向き</label><select id="footTab"><option value="0">来訪</option><option value="1">訪問</option></select></div>
+    <p id="footStatus" class="muted small" role="status"></p><ul id="footList" class="room-list im-friend-list"></ul><button id="btnMoreFoot" type="button" class="secondary compact" hidden>さらに表示</button>
+    <p class="muted small">一般ユーザーのみ表示します。公式・システムアカウントとそのメッセージは自動で除外されます。アイコンや名前を押すとプロフィールと投稿を見られます（メッセージには入りません）。このページを開いているあいだ受信します。メッセージが来ると上部に差出人と内容が出て、タップでそのチャットを開きます。開くまで既読にはせず、既読通知も送りません。Web が接続を使っているあいだ、同じアカウントの App にはリアルタイムの私信が届きません（App が接続を取ったあと、Web は自動では取り戻しません。「再接続」を押すと戻ります）。ページを閉じるかバックグラウンドにしておよそ10分で、App が再び受信できます。送信は「送信」を押したときだけ行います。</p>
+  </section>
+  <dialog id="profileDialog" aria-labelledby="profileTitle">
+    <div class="section-head"><h2 id="profileTitle">プロフィール</h2><div class="actions"><button id="btnProfileChat" type="button" class="secondary compact" disabled>メッセージ</button><button id="btnProfileBlock" type="button" class="destructive compact" disabled>ブロック</button><button id="btnCloseProfile" type="button" class="secondary profile-close" aria-label="プロフィールを閉じる">×</button></div></div>
+    <div class="profile-body"><div id="profileCard"></div><p id="profileStatus" class="muted small" role="status"></p><div id="profileRelations" class="chips" hidden><button id="btnProfileFollowing" type="button" class="secondary compact">フォロー</button><button id="btnProfileFans" type="button" class="secondary compact">フォロワー</button><button id="btnProfileGiftsRecv" type="button" class="secondary compact">受け取ったギフト</button><button id="btnProfileGiftsSent" type="button" class="secondary compact">贈ったギフト</button></div><div id="profileRelation"></div><p id="profileRelationStatus" class="muted small" role="status"></p><button id="btnMoreRelation" type="button" class="secondary compact" hidden>さらに表示</button><h3>投稿</h3><div id="profilePosts"></div><p id="profilePostsStatus" class="muted small" role="status"></p></div>
+    <nav class="pagination" aria-label="プロフィール投稿のページ"><button id="btnPrevProfilePosts" type="button" class="secondary" disabled>前へ</button><span id="profilePostPage">1 / 1</span><button id="btnNextProfilePosts" type="button" class="secondary" disabled>次へ</button><button id="btnRefreshProfile" type="button" class="secondary compact">更新</button></nav>
+  </dialog>
+  <dialog id="imChatDialog" aria-labelledby="imChatTitle">
+    <div class="section-head"><div class="im-chat-head"><span id="imChatAvatar"></span><h2 id="imChatTitle">メッセージ</h2></div><div class="actions"><button id="btnReconnectImChat" type="button" class="secondary compact" hidden>再接続</button><button id="btnCloseImChat" type="button" class="secondary compact">閉じる</button></div></div>
+    <ol id="imMessages" class="im-messages" aria-live="polite"></ol>
+    <form id="imComposer" class="im-compose"><label for="imInput" class="sr-only">メッセージ</label><textarea id="imInput" rows="2" maxlength="500" placeholder="メッセージ（最大500字、Ctrl/⌘+Enterで送信）…" disabled></textarea><button id="btnImImage" type="button" class="secondary" disabled title="画像を送る（jpg/png/gif、1MBまで）">画像</button><input id="imImageInput" type="file" accept="image/jpeg,image/png,image/gif" hidden><button id="btnImSend" type="submit" disabled>送信</button><p id="imChatStatus" class="muted small" role="status"></p></form>
+  </dialog>
+  <dialog id="feedDetailDialog" aria-labelledby="feedDetailTitle">
+    <div class="section-head"><h2 id="feedDetailTitle">投稿とコメント</h2><div class="actions"><button id="btnRefreshFeedDetail" type="button" class="secondary compact" disabled>更新</button><button id="btnCloseFeedDetail" type="button" class="secondary compact">閉じる</button></div></div>
+    <div class="feed-detail-body"><div id="feedDetailContent"></div><p id="feedDetailStatus" class="muted small" role="status"></p>
+    <ul id="feedComments" class="feed-comments"></ul><button id="btnMoreFeedComments" type="button" class="secondary compact" hidden>コメントをさらに表示</button></div>
+    <form id="feedReplyForm"><div class="section-head"><span id="feedReplyTarget" class="small">投稿に返信</span><button id="btnReplyPost" type="button" class="secondary compact">投稿に返信</button></div>
+      <label for="feedReplyInput" class="sr-only">返信</label><textarea id="feedReplyInput" rows="3" maxlength="500" placeholder="返信（最大500字）…" disabled></textarea>
+      <button id="btnFeedReplySend" type="submit" disabled>返信を送る</button><p id="feedReplyStatus" class="muted small" role="status"></p></form>
+  </dialog>
+  <div id="appNotice" class="notice" role="status" hidden></div>
+  <div class="workspace">
+    <div class="discovery">
+      <section class="card" aria-labelledby="roomsTitle">
+        <div class="section-head"><h2 id="roomsTitle">オンラインのルーム</h2><div class="actions"><button id="btnCreateRoom" type="button" class="compact">開室</button><button id="btnRefreshRooms" type="button" class="secondary compact">更新</button></div></div>
+        <form id="searchForm" class="search-row" role="search">
+          <label class="sr-only" for="searchInput">ルーム検索</label><input id="searchInput" type="search" maxlength="100" placeholder="ルーム名・ホスト…" autocomplete="off">
+          <button id="btnSearch" type="submit">検索</button>
+        </form>
+        <div class="filters"><label id="roomLabelControl" hidden><span class="sr-only">ルームの分類</span><select id="roomLabel"><option value="">すべてのルーム</option></select></label><div id="searchRecommendations" class="chips" aria-label="検索のおすすめ"></div></div>
+        <p id="searchStatus" class="muted small" role="status"></p>
+        <p id="roomsStatus" class="muted small" role="status">読み込み中…</p>
+        <ul id="roomList" class="room-list"></ul>
+        <nav class="pagination" aria-label="ルームのページ"><button id="btnPrevRooms" type="button" class="secondary" disabled>前へ</button><span id="pageStatus" aria-live="polite">1 / 1</span><button id="btnNextRooms" type="button" class="secondary" disabled>次へ</button></nav>
+      </section>
+      <section class="card" aria-labelledby="friendsTitle">
+        <div class="section-head"><h2 id="friendsTitle">フォロー中のフレンドはどこ？</h2><button id="btnRefreshFriends" type="button" class="secondary compact">更新</button></div>
+        <p id="friendsStatus" class="muted small" role="status">読み込み中…</p><ul id="friendList" class="room-list friend-list"></ul>
+        <button id="btnMoreFriends" type="button" class="secondary compact" hidden>フレンドをさらに表示</button>
+      </section>
+    </div>
+    <section id="roomPanel" class="card room-panel" aria-labelledby="boardTitle">
+      <div class="section-head"><div><span id="roomMode" class="eyebrow">いまのルーム</span><h2 id="boardTitle">メンバーとチャット</h2></div><div class="actions"><button id="btnStopPreview" type="button" class="secondary compact" hidden>試聴を止める</button><button id="btnExitRoom" type="button" class="secondary compact" hidden>退室</button><button id="btnEndRoom" type="button" class="destructive compact" hidden>ルームを終了</button></div></div>
+      <button id="btnBlockHost" type="button" class="destructive compact" hidden>ホストをブロックして退室</button>
+      <p id="status" role="status" aria-live="polite">ルームを選んでください</p><p id="audioStatus" class="people-section audio-status" aria-live="polite" hidden><span>マイクで話している人</span> <span id="audioCount" class="muted small">0人</span></p>
+      <button id="btnReplay" type="button" class="secondary" hidden>音声を再開</button>
+      <div id="roomContents" hidden>
+        <p id="auditionNotice" class="notice" hidden>試聴中 · 未入室です。聞くだけで話せません。名簿は15秒ごとに更新。人を押すとプロフィールを見られます。</p>
+        <div id="micBar" class="mic-bar" aria-label="マイク席とマイク操作"><button id="btnApplySeat" type="button" disabled>マイク席へ</button><button id="btnLeaveSeat" type="button" class="secondary" disabled>席を離れる</button><button id="btnOpenMic" type="button" disabled>マイクオン</button><button id="btnCloseMic" type="button" class="secondary" disabled>マイクオフ</button></div>
+        <div id="micInfo" class="mic-info"><span id="micStatus" role="status">マイクオフ</span><meter id="micLevel" min="0" max="1" value="0" aria-label="マイク入力レベル"></meter></div>
+        <section id="hostPanel" hidden>
+          <h3>ホスト</h3>
+          <label>お知らせ<textarea id="hostNotice" maxlength="200" rows="2" placeholder="ルームのお知らせ"></textarea></label>
+          <button id="btnSaveNotice" type="button" class="secondary compact">お知らせを保存</button>
+          <label>タグ<input id="hostTags" maxlength="120" placeholder="カンマ区切り、最大5個" autocomplete="off"></label>
+          <button id="btnSaveTags" type="button" class="secondary compact">タグを保存</button>
+          <label class="gift-thanks-toggle"><input id="hostAutoPass" type="checkbox"> マイク席を自動許可</label>
+          <div id="applyQueue" hidden><p class="muted small">マイク席の申請</p><ul id="applyList" class="people-list"></ul></div>
+        </section>
+        <p id="memberStatus" class="muted small" role="status"></p><p id="secureHint" class="muted small"></p>
+        <p id="boardStatus" class="muted small" role="status"></p>
+        <details class="people-section" open><summary>マイク席 <span id="seatCount" class="muted small"></span></summary><ul id="seatList" class="people-list"></ul></details>
+        <details class="people-section" open><summary>ルーム内 <span id="memberCount" class="muted small"></span></summary><ul id="memberList" class="people-list"></ul><nav id="memberPager" class="pagination" aria-label="メンバーのページ" hidden><button id="btnPrevMembers" type="button" class="secondary compact" disabled>前へ</button><span id="memberPage">1 / 1</span><button id="btnNextMembers" type="button" class="secondary compact" disabled>次へ</button></nav></details>
+        <section id="publicChatBlock">
+        <h3>チャット</h3><p class="muted small">ギフトを受け取ったら自動でお礼します（自分宛のみ · ギフトごとに1回）。</p>
+        <div class="chat-toggles">
+          <label class="gift-thanks-toggle"><input id="autoWelcome" type="checkbox"> 自動歓迎</label>
+          <label class="gift-thanks-toggle"><input id="autoLikeRoom" type="checkbox"> ルームを自動いいね</label>
+          <label class="gift-thanks-toggle"><input id="autoTranslate" type="checkbox" checked> チャット英語訳 <span class="muted small">訳は原文の下に灰色の小さめの字で出ます</span></label>
+        </div>
+        <ol id="publicChat" aria-live="polite"></ol>
+        <form id="chatForm" class="chat-compose"><label class="sr-only" for="chatInput">チャット</label><textarea id="chatInput" rows="1" maxlength="200" placeholder="メッセージ…" disabled></textarea><button id="btnTimeGreet" type="button" class="secondary">あいさつ</button><button id="btnChatSend" type="submit" disabled>送信</button></form>
+        <form id="hostGreetRow" class="chat-compose host-greet" hidden>
+          <label class="gift-thanks-toggle"><input id="hostDog" type="checkbox"> 入室歓迎</label>
+          <label class="sr-only" for="hostWelcomeText">入室のあいさつ</label>
+          <input id="hostWelcomeText" maxlength="80" placeholder="{name}，ようこそ！" autocomplete="off">
+        </form>
+        <p id="chatStatus" class="muted small" role="status"></p>
+        </section>
+      </div>
+    </section>
+  </div>
+  <dialog id="createRoomDialog" aria-labelledby="createRoomTitle">
+    <div class="section-head"><h2 id="createRoomTitle">ルームを作る</h2><button id="btnCloseCreateRoom" type="button" class="secondary profile-close" aria-label="開室を閉じる">×</button></div>
+    <p class="muted small">いまのアカウントで作成し、成功したらすぐ入室します。ロビーを更新すると他の人にも見えます。</p>
+    <form id="createRoomForm" class="create-room-form">
+      <label>ルーム名<input id="createRoomName" name="name" maxlength="40" required placeholder="ルーム名" autocomplete="off"></label>
+      <label>分類<select id="createRoomLabel" required><option value="">分類を選ぶ</option></select></label>
+      <label>タグ<input id="createRoomTags" maxlength="120" placeholder="カンマ区切り。開室後も変更できます" autocomplete="off"></label>
+      <label class="gift-thanks-toggle"><input id="createRoomAutoPass" type="checkbox" checked> マイク席を承認なしにする <span class="muted small">オフにすると承認待ちになります。開室後も切り替えできます</span></label>
+      <button id="btnCreateRoomSubmit" type="submit">作成して入室</button>
+      <p id="createRoomStatus" class="muted small" role="status"></p>
+    </form>
+  </dialog>
+  <details class="card diagnostics"><summary>接続ログ</summary><pre id="log" aria-live="off"></pre></details>
+</main>
+</body>
+</html>

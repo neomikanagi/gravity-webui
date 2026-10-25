@@ -1,0 +1,11 @@
+.git
+.session
+_analysis
+.env
+.venv
+node_modules
+__pycache__
+*.pem
+backups
+.local-*
+**/._*
